@@ -1,0 +1,13 @@
+# Birdeye Integration
+
+Birdeye calls are centralized in `lib/birdeye`.
+
+`birdeyeFetch<T>()`:
+
+- Reads `NEXT_PUBLIC_BIRDEYE_API_KEY`.
+- Sends `X-API-KEY` and `x-chain`.
+- Adds query params.
+- Uses timeout and one retry.
+- Handles missing key, 429s, CORS/network errors, and demo fallback.
+
+Endpoint paths are intentionally isolated in wrapper modules because Birdeye endpoint names may need adjustment.

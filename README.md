@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DegenDNA Lite
 
-## Getting Started
+Find meme coins that fit your wallet.
 
-First, run the development server:
+DegenDNA Lite is a frontend-only personalized meme coin radar. It reads public EVM wallet activity, calls Birdeye directly from the browser, detects a wallet personality, ranks Base meme tokens by momentum/risk/liquidity/fit, and uses a simple Base ERC-721 NFT to unlock pro insights.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Why Traders Use It
+
+- See a free meme radar without approvals or private keys.
+- Understand wallet behavior as a simple trader personality.
+- Unlock personalized fit scores, warnings, weakness report, watchlist, and share card after minting.
+- Share a public DegenDNA profile backed by contract metadata.
+
+This is behavioral and market analysis, not financial advice.
+
+## Architecture
+
+```text
+Browser / Next.js App
+  -> wagmi + RainbowKit reads wallet
+  -> direct Birdeye public API calls
+  -> client-side TypeScript scoring engines
+  -> frontend-generated SVG + base64 JSON metadata
+  -> Base ERC-721 mint stores tokenURI
+  -> hasMinted(wallet) gates pro UI
+  -> localStorage stores cache/watchlist
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+DegenDNA is intentionally frontend-first: all intelligence is computed client-side from Birdeye data, while Base is used only for ownership, payment, and NFT identity.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For hackathon simplicity, this MVP calls Birdeye directly from the frontend. In production, API keys should be moved behind a secure proxy or serverless edge function.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment
 
-## Learn More
+Copy `.env.example` to `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+NEXT_PUBLIC_BIRDEYE_API_KEY=
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
+NEXT_PUBLIC_BASE_CHAIN_ID=8453
+NEXT_PUBLIC_DEGENDNA_CONTRACT_ADDRESS=
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Local Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install
+npm run dev
+```
 
-## Deploy on Vercel
+Open `http://localhost:3000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contract Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Install Foundry dependencies:
+
+```bash
+forge install OpenZeppelin/openzeppelin-contracts foundry-rs/forge-std
+forge test
+forge script contracts/script/Deploy.s.sol --rpc-url $BASE_RPC_URL --broadcast --verify
+```
+
+Set `NEXT_PUBLIC_DEGENDNA_CONTRACT_ADDRESS` to the deployed contract address.
+
+## Demo Mode
+
+Use `/app?demo=1` or the “Try Demo” button. Demo mode provides a wallet personality and radar tokens if Birdeye is unavailable or no key is configured.
+
+## Hackathon Limitations
+
+- Public API key is visible in the browser.
+- Unlock gating is frontend-grade and transparent.
+- Watchlist is local to the browser.
+- Profiles are contract metadata only.
+- No backend OG image generation, indexer, database, IPFS, or custom API routes.
+
+## Production Improvements
+
+- Secure API proxy or edge function.
+- Database-backed profiles and cross-device watchlist.
+- Server-side OG images.
+- Indexer for faster public profiles.
+- Private pro report generation.
+- Notifications and alerting.
