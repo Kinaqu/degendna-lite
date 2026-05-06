@@ -3,12 +3,6 @@ import type { BirdeyeWalletBundle } from "./types";
 
 type WalletListResponse = unknown[] | { items?: unknown[]; list?: unknown[]; data?: unknown[] };
 
-const WALLET_DELAY_MS = 900;
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function unwrapList(response: WalletListResponse): unknown[] {
   if (Array.isArray(response)) return response;
   return response.items || response.list || response.data || [];
@@ -67,21 +61,16 @@ export async function getWalletBalanceChanges(wallet: string, chain = "base") {
 }
 
 export async function getWalletBundle(wallet: string, chain = "base"): Promise<BirdeyeWalletBundle> {
-  const tx = await safeCall("transactions", () => getWalletTransactions(wallet, chain));
-  await sleep(WALLET_DELAY_MS);
+  // Lite analysis intentionally uses the single wallet endpoint available on
+  // lower Birdeye plans. Tx/detail endpoints stay callable for future deep mode,
+  // but the default app flow must not fan out and burn rate limits per user.
   const pnlSummary = await safeCall("pnl summary", () => getWalletPnlSummary(wallet, chain));
-  await sleep(WALLET_DELAY_MS);
-  const pnlDetails = await safeCall("pnl details", () => getWalletPnlDetails(wallet, chain));
-  await sleep(WALLET_DELAY_MS);
-  const balanceChanges = await safeCall("balance changes", () => getWalletBalanceChanges(wallet, chain));
 
   return {
-    transactions: tx.data || [],
+    transactions: [],
     pnlSummary: pnlSummary.data,
-    pnlDetails: pnlDetails.data || [],
-    balanceChanges: balanceChanges.data || [],
-    errors: [tx, pnlSummary, pnlDetails, balanceChanges].flatMap((result) =>
-      result.error ? [`${result.label}: ${result.error}`] : [],
-    ),
+    pnlDetails: [],
+    balanceChanges: [],
+    errors: pnlSummary.error ? [`${pnlSummary.label}: ${pnlSummary.error}`] : [],
   };
 }

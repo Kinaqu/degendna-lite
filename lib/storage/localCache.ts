@@ -22,9 +22,9 @@ export function setCache<T>(key: string, value: T) {
 }
 
 export function walletAnalysisKey(wallet: string, chainId: number | string) {
-  return `degendna:wallet-analysis:v2:${wallet.toLowerCase()}:${chainId}`;
+  return `degendna:wallet-analysis:v3:${wallet.toLowerCase()}:${chainId}`;
 }
 
 export function radarKey(chainId: number | string, mode: string) {
-  return `degendna:radar:v2:${chainId}:${mode}`;
+  return `degendna:radar:v3:${chainId}:${mode}`;
 }

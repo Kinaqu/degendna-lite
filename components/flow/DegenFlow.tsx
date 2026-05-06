@@ -38,14 +38,13 @@ export function DegenFlow({
 }) {
   const { address, isConnected } = useAccount();
   const [demoMode, setDemoMode] = useState(initialDemo);
-  const [demoUnlocked, setDemoUnlocked] = useState(false);
   const [selectedToken, setSelectedToken] = useState<RadarToken | null>(null);
   const wallet = demoMode ? REAL_DATA_DEMO_WALLET : address;
   const { personality, isLoading, error, runAnalysis } = useWalletAnalysis(wallet, demoMode);
   const { tokens, isLoading: radarLoading, error: radarError } = useRadar(personality, demoMode);
   const mintStatus = useMintStatus(address);
   const { refetch: refetchMintStatus } = mintStatus;
-  const unlocked = Boolean(mintStatus.hasMinted || demoUnlocked);
+  const unlocked = Boolean(demoMode || mintStatus.hasMinted);
   const { items: watchlist, add, remove, clear } = useLocalWatchlist(wallet);
   const topFit = useMemo(() => [...tokens].sort((a, b) => (b.fitScore ?? 0) - (a.fitScore ?? 0))[0], [tokens]);
   const handleMinted = useCallback(() => {
@@ -63,7 +62,7 @@ export function DegenFlow({
   return (
     <FlowShell demoMode={demoMode}>
       <div className="mb-6">
-        <FlowStepper activeIndex={activeIndex} />
+        <FlowStepper activeIndex={activeIndex} demoMode={demoMode} />
       </div>
 
       <section className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
@@ -75,9 +74,9 @@ export function DegenFlow({
           </CardHeader>
           <CardContent className="space-y-5">
             <p className="text-sm leading-6 text-muted-foreground">
-              Connect an EVM wallet or use real-data demo mode. DegenDNA reads public wallet
-              activity, computes a personality, ranks meme tokens, and unlocks
-              full fit analysis through a Base NFT.
+              Connect an EVM wallet or use real-data demo mode. DegenDNA uses a light Birdeye
+              request budget, computes a wallet personality, and ranks meme tokens without
+              hammering the API.
             </p>
             <div className="rounded-lg border border-border bg-background/45 p-3 text-sm text-muted-foreground">
               This is behavioral and market analysis, not financial advice.
@@ -115,19 +114,17 @@ export function DegenFlow({
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm leading-6 text-muted-foreground">
-                Minting your DegenDNA NFT unlocks full radar rows, fit scores,
-                warnings, local watchlist, weakness report, and share card.
+                {demoMode
+                  ? "Demo mode unlocks fit scores, warnings, watchlist, weakness report, and share card immediately. No mint or NFT transaction is required."
+                  : "Minting your DegenDNA NFT unlocks full radar rows, fit scores, warnings, local watchlist, weakness report, and share card."}
               </p>
               {unlocked ? (
-                <Badge tone="success">Unlocked</Badge>
+                <Badge tone="success">{demoMode ? "Demo unlocked" : "Unlocked"}</Badge>
               ) : (
                 <a href="#mint" className="inline-flex items-center gap-2 text-sm font-semibold text-secondary">
                   Go to mint <ArrowDown className="h-4 w-4" />
                 </a>
               )}
-              {demoMode && !demoUnlocked ? (
-                <Button variant="outline" onClick={() => setDemoUnlocked(true)}>Simulate demo unlock</Button>
-              ) : null}
             </CardContent>
           </Card>
         </section>
@@ -145,7 +142,7 @@ export function DegenFlow({
         </section>
       ) : null}
 
-      {personality ? (
+      {personality && !demoMode ? (
         <section id="mint" className="mt-6">
           <MintPanel personality={personality} onMinted={handleMinted} />
         </section>

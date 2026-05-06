@@ -9,11 +9,9 @@ type TokenListResponse =
       list?: BirdeyeTokenListItem[];
     };
 
-const SOURCE_DELAY_MS = 900;
+const MIN_RADAR_TOKENS = 10;
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+let inFlightRadar: Promise<BirdeyeTokenListItem[]> | null = null;
 
 function unwrap(response: TokenListResponse): BirdeyeTokenListItem[] {
   if (Array.isArray(response)) return response;
@@ -80,26 +78,35 @@ export async function getTokenOverview(address: string, chain = "base") {
 }
 
 export async function getRadarSourceTokens(chain = "base") {
-  const sources = [
-    await safeSource("trending", () => getTrendingTokens(chain)),
-    await sleep(SOURCE_DELAY_MS).then(() => safeSource("new listings", () => getNewListings(chain))),
-    await sleep(SOURCE_DELAY_MS).then(() => safeSource("meme list", () => getMemeTokens(chain))),
-  ];
+  if (inFlightRadar) return inFlightRadar;
 
-  const seen = new Set<string>();
-  const tokens = sources
-    .flatMap((source) => source.items)
-    .filter((token) => {
-      const address = (token.address || token.tokenAddress || "").toLowerCase();
-      if (!address || seen.has(address)) return false;
-      seen.add(address);
-      return true;
-    });
+  inFlightRadar = (async () => {
+    const sources = [await safeSource("trending", () => getTrendingTokens(chain))];
+    if (!sources[0].error && sources[0].items.length < MIN_RADAR_TOKENS) {
+      sources.push(await safeSource("new listings", () => getNewListings(chain)));
+    }
 
-  if (!tokens.length) {
-    const errors = sources.flatMap((source) => (source.error ? [`${source.label}: ${source.error}`] : []));
-    throw new Error(errors.length ? errors.join("; ") : "Birdeye returned no radar tokens");
+    const seen = new Set<string>();
+    const tokens = sources
+      .flatMap((source) => source.items)
+      .filter((token) => {
+        const address = (token.address || token.tokenAddress || "").toLowerCase();
+        if (!address || seen.has(address)) return false;
+        seen.add(address);
+        return true;
+      });
+
+    if (!tokens.length) {
+      const errors = sources.flatMap((source) => (source.error ? [`${source.label}: ${source.error}`] : []));
+      throw new Error(errors.length ? errors.join("; ") : "Birdeye returned no radar tokens");
+    }
+
+    return tokens;
+  })();
+
+  try {
+    return await inFlightRadar;
+  } finally {
+    inFlightRadar = null;
   }
-
-  return tokens;
 }

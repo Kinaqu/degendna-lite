@@ -105,7 +105,7 @@ export async function birdeyeFetch<T>(
   } catch (firstError) {
     const shouldRetry =
       firstError instanceof BirdeyeError
-        ? firstError.status === 408 || firstError.status === 429 || firstError.status === undefined
+        ? firstError.status === 408 || firstError.status === undefined
         : true;
     if (!shouldRetry) {
       console.warn("[Birdeye]", path, getErrorMessage(firstError));
