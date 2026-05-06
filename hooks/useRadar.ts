@@ -6,6 +6,7 @@ import { getRadarSourceTokens } from "@/lib/birdeye/tokens";
 import { rankRadarTokens } from "@/lib/scoring/radarRanker";
 import type { RadarToken, WalletPersonalityResult } from "@/lib/scoring/personalityTypes";
 import { getCache, radarKey, setCache } from "@/lib/storage/localCache";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 const TTL = 1000 * 60 * 5;
 
@@ -33,7 +34,7 @@ export function useRadar(personality?: WalletPersonalityResult | null, demoMode 
       setTokens(ranked);
     } catch (caught) {
       console.warn("[Radar] Birdeye radar unavailable", caught);
-      setError("Real Birdeye radar data is unavailable right now. Check the API key, CORS, or rate limits.");
+      setError(`Real Birdeye radar data is unavailable right now: ${getErrorMessage(caught)}`);
       setTokens([]);
     } finally {
       setIsLoading(false);

@@ -10,6 +10,10 @@ type TokenListResponse =
     };
 
 const MIN_RADAR_TOKENS = 10;
+const TRENDING_LIMIT = 20;
+const TOKEN_LIST_LIMIT = 25;
+const MEME_TOKEN_LIST_LIMIT = 25;
+const MEME_TOKEN_SUPPORTED_CHAINS = new Set(["solana", "bsc", "monad"]);
 
 let inFlightRadar: Promise<BirdeyeTokenListItem[]> | null = null;
 
@@ -37,7 +41,7 @@ export async function getNewListings(chain = "base") {
     query: {
       sort_by: "recent_listing_time",
       sort_type: "desc",
-      limit: 25,
+      limit: TOKEN_LIST_LIMIT,
       min_liquidity: 1000,
     },
   });
@@ -51,20 +55,24 @@ export async function getTrendingTokens(chain = "base") {
       sort_by: "rank",
       sort_type: "asc",
       offset: 0,
-      limit: 25,
+      limit: TRENDING_LIMIT,
     },
   });
   return unwrap(response);
 }
 
-export async function getMemeTokens(chain = "base") {
+export async function getMemeTokens(chain = "solana") {
+  if (!MEME_TOKEN_SUPPORTED_CHAINS.has(chain)) {
+    throw new Error(`Birdeye meme token list does not support chain "${chain}"`);
+  }
+
   const response = await birdeyeFetch<TokenListResponse>("/defi/v3/token/meme/list", {
     chain,
     query: {
       sort_by: "volume_24h_usd",
       sort_type: "desc",
       source: "all",
-      limit: 25,
+      limit: MEME_TOKEN_LIST_LIMIT,
     },
   });
   return unwrap(response);
