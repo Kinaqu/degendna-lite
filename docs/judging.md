@@ -8,7 +8,7 @@
 - Base ERC-721 minting.
 - Base64 metadata.
 - Contract-gated frontend unlock.
-- Local cache and demo fallback.
+- Local cache and real-data demo mode.
 
 ## Community Support
 
@@ -26,4 +26,4 @@
 
 - Guided onboarding flow.
 - Polished dark UI.
-- Demo-safe fallback path.
+- Real-data demo path with explicit limited states for API permission/rate-limit issues.

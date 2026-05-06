@@ -36,7 +36,7 @@ export function Hero() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/app?demo=1">Try Demo</Link>
+                <Link href="/app?demo=1">Try Real-Data Demo</Link>
               </Button>
             </div>
             <p className="mt-5 flex max-w-2xl items-start gap-2 text-sm leading-6 text-muted-foreground">

@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useChainId } from "wagmi";
 import { getWalletBundle } from "@/lib/birdeye/wallet";
-import { demoPersonality } from "@/lib/demo/demoWallet";
 import { analyzeWalletPersonality } from "@/lib/scoring/personalityEngine";
 import type { WalletPersonalityResult } from "@/lib/scoring/personalityTypes";
 import { getCache, setCache, walletAnalysisKey } from "@/lib/storage/localCache";
 
 const TTL = 1000 * 60 * 20;
+const REAL_DATA_DEMO_WALLET =
+  process.env.NEXT_PUBLIC_DEMO_WALLET_ADDRESS || "0x2b585891B9bc6183f70e12Ae6413280E3304Ac07";
 
 export function useWalletAnalysis(wallet?: string, demoMode = false) {
   const chainId = useChainId();
@@ -17,15 +18,10 @@ export function useWalletAnalysis(wallet?: string, demoMode = false) {
   const [error, setError] = useState<string | null>(null);
 
   const runAnalysis = useCallback(async () => {
-    const targetWallet = wallet || demoPersonality.walletAddress;
+    const targetWallet = wallet || REAL_DATA_DEMO_WALLET;
     setIsLoading(true);
     setError(null);
     try {
-      if (demoMode) {
-        setPersonality({ ...demoPersonality, walletAddress: targetWallet });
-        return;
-      }
-
       const key = walletAnalysisKey(targetWallet, chainId);
       const cached = getCache<WalletPersonalityResult>(key, TTL);
       if (cached) {
@@ -37,14 +33,19 @@ export function useWalletAnalysis(wallet?: string, demoMode = false) {
       const result = analyzeWalletPersonality(targetWallet, bundle);
       setCache(key, result);
       setPersonality(result);
+      if (bundle.errors?.length && bundle.transactions.length + bundle.pnlDetails.length < 3) {
+        setError(
+          "Birdeye wallet endpoints returned limited data for this API key, so the profile is based only on available public responses.",
+        );
+      }
     } catch (caught) {
-      console.warn("[Wallet analysis] falling back to demo", caught);
-      setError("Birdeye wallet analysis failed, using demo-safe data.");
-      setPersonality({ ...demoPersonality, walletAddress: targetWallet });
+      console.warn("[Wallet analysis] Birdeye wallet analysis unavailable", caught);
+      setError("Real Birdeye wallet analysis is unavailable right now. Showing a limited fresh-wallet profile, not fake trading history.");
+      setPersonality(analyzeWalletPersonality(targetWallet));
     } finally {
       setIsLoading(false);
     }
-  }, [chainId, demoMode, wallet]);
+  }, [chainId, wallet]);
 
   useEffect(() => {
     if (!demoMode) return;

@@ -64,7 +64,7 @@ Set `NEXT_PUBLIC_DEGENDNA_CONTRACT_ADDRESS` to the deployed contract address.
 
 ## Demo Mode
 
-Use `/app?demo=1` or the “Try Demo” button. Demo mode provides a wallet personality and radar tokens if Birdeye is unavailable or no key is configured.
+Use `/app?demo=1` or the “Try Real-Data Demo” button. Demo mode uses a configured public wallet address and still calls Birdeye directly from the browser. If Birdeye wallet endpoints are unavailable for the current API key, the app shows a limited fresh-wallet profile instead of fake trading history. Radar tokens are not fixture-backed; they come from Birdeye token endpoints or show an explicit unavailable state.
 
 ## Hackathon Limitations
 

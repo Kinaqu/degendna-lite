@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useChainId } from "wagmi";
 import { getRadarSourceTokens } from "@/lib/birdeye/tokens";
-import { demoRadarTokens } from "@/lib/demo/demoRadar";
 import { rankRadarTokens } from "@/lib/scoring/radarRanker";
 import type { RadarToken, WalletPersonalityResult } from "@/lib/scoring/personalityTypes";
 import { getCache, radarKey, setCache } from "@/lib/storage/localCache";
@@ -22,11 +21,7 @@ export function useRadar(personality?: WalletPersonalityResult | null, demoMode 
     setIsLoading(true);
     setError(null);
     try {
-      if (demoMode) {
-        setTokens(demoRadarTokens);
-        return;
-      }
-      const key = radarKey(chainId, personality?.walletAddress || "base");
+      const key = radarKey(chainId, `${demoMode ? "real-demo" : "real"}:${personality?.walletAddress || "base"}`);
       const cached = getCache<RadarToken[]>(key, TTL);
       if (cached) {
         setTokens(cached);
@@ -34,13 +29,12 @@ export function useRadar(personality?: WalletPersonalityResult | null, demoMode 
       }
       const source = await getRadarSourceTokens("base");
       const ranked = rankRadarTokens(source, personality || undefined);
-      const usable = ranked.length ? ranked : demoRadarTokens;
-      setCache(key, usable);
-      setTokens(usable);
+      setCache(key, ranked);
+      setTokens(ranked);
     } catch (caught) {
-      console.warn("[Radar] falling back to demo", caught);
-      setError("Birdeye radar failed, using demo-safe radar.");
-      setTokens(demoRadarTokens);
+      console.warn("[Radar] Birdeye radar unavailable", caught);
+      setError("Real Birdeye radar data is unavailable right now. Check the API key, CORS, or rate limits.");
+      setTokens([]);
     } finally {
       setIsLoading(false);
     }

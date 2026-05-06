@@ -1,4 +1,3 @@
-import { demoPersonality } from "@/lib/demo/demoWallet";
 import { clamp } from "@/lib/utils/numbers";
 import { computeWalletMetrics, hasFreshWalletActivity } from "./walletMetrics";
 import {
@@ -45,9 +44,7 @@ function describe(type: PersonalityType) {
 export function analyzeWalletPersonality(
   walletAddress: string,
   bundle?: BirdeyeWalletBundle,
-  forceDemo = false,
 ): WalletPersonalityResult {
-  if (forceDemo) return { ...demoPersonality, walletAddress };
   const fresh = hasFreshWalletActivity(bundle);
   const metrics = computeWalletMetrics(bundle);
   const scores = scorePersonalities(metrics);

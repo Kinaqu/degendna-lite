@@ -9,6 +9,33 @@ function tokenAddress(token: BirdeyeTokenListItem) {
   return token.address || token.tokenAddress || "0x0000000000000000000000000000000000000000";
 }
 
+function priceChange(token: BirdeyeTokenListItem) {
+  return token.price24hChangePercent ?? token.priceChange24hPercent ?? token.priceChange24h;
+}
+
+function volumeChange(token: BirdeyeTokenListItem) {
+  return token.volume24hChangePercent ?? token.volume_24h_change_percent ?? token.volumeChange24h ?? token.volume_4h_change_percent;
+}
+
+function marketCap(token: BirdeyeTokenListItem) {
+  return token.market_cap ?? token.marketcap ?? token.marketCap ?? token.mc ?? token.fdv;
+}
+
+function ageMinutes(token: BirdeyeTokenListItem) {
+  if (token.ageMinutes !== undefined) return token.ageMinutes;
+  const raw = token.recent_listing_time ?? token.createdAt ?? token.last_trade_unix_time;
+  if (raw === undefined) return undefined;
+  const timestamp =
+    typeof raw === "number"
+      ? raw < 10_000_000_000
+        ? raw * 1000
+        : raw
+      : Date.parse(String(raw));
+  if (!Number.isFinite(timestamp)) return undefined;
+  const minutes = Math.max(0, Math.round((Date.now() - timestamp) / 60000));
+  return minutes > 60 * 24 * 365 ? undefined : minutes;
+}
+
 function verdict(token: Pick<RadarToken, "momentumScore" | "riskScore" | "liquidityScore" | "fitScore">): RadarToken["verdict"] {
   if ((token.fitScore ?? 0) >= 78 && token.riskScore < 70) return "Strong Fit";
   if (token.riskScore > 82 || token.liquidityScore < 25) return "Avoid";
@@ -23,20 +50,21 @@ export function rankRadarTokens(
 ): RadarToken[] {
   return sourceTokens
     .map((source, index) => {
-      const momentumScore = computeMomentumScore(source);
-      const riskScore = computeRiskScore(source);
-      const liquidityScore = computeLiquidityScore(source);
+      const normalizedSource = { ...source, ageMinutes: ageMinutes(source) };
+      const momentumScore = computeMomentumScore(normalizedSource);
+      const riskScore = computeRiskScore(normalizedSource);
+      const liquidityScore = computeLiquidityScore(normalizedSource);
       const token: RadarToken = {
-        address: tokenAddress(source),
+        address: tokenAddress(normalizedSource),
         chain: "base",
-        symbol: source.symbol || `MEME${index + 1}`,
-        name: source.name || "Unknown Meme Token",
-        logoURI: source.logoURI || source.logo_uri,
-        ageMinutes: source.ageMinutes,
-        priceChange24h: source.priceChange24hPercent ?? source.priceChange24h,
-        volumeChange24h: source.volumeChange24h,
-        liquidity: source.liquidity,
-        marketCap: source.marketCap ?? source.mc,
+        symbol: normalizedSource.symbol || `MEME${index + 1}`,
+        name: normalizedSource.name || "Unknown Meme Token",
+        logoURI: normalizedSource.logoURI || normalizedSource.logo_uri,
+        ageMinutes: normalizedSource.ageMinutes,
+        priceChange24h: priceChange(normalizedSource),
+        volumeChange24h: volumeChange(normalizedSource),
+        liquidity: normalizedSource.liquidity,
+        marketCap: marketCap(normalizedSource),
         momentumScore,
         riskScore,
         liquidityScore,

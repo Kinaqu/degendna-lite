@@ -19,11 +19,13 @@ import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import { useMintStatus } from "@/hooks/useMintStatus";
 import { useRadar } from "@/hooks/useRadar";
 import { useWalletAnalysis } from "@/hooks/useWalletAnalysis";
-import { demoPersonality } from "@/lib/demo/demoWallet";
 import type { RadarToken } from "@/lib/scoring/personalityTypes";
 import { FlowActions } from "./FlowActions";
 import { FlowShell } from "./FlowShell";
 import { FlowStepper } from "./FlowStepper";
+
+const REAL_DATA_DEMO_WALLET =
+  process.env.NEXT_PUBLIC_DEMO_WALLET_ADDRESS || "0x2b585891B9bc6183f70e12Ae6413280E3304Ac07";
 
 export function DegenFlow({
   initialDemo = false,
@@ -38,7 +40,7 @@ export function DegenFlow({
   const [demoMode, setDemoMode] = useState(initialDemo);
   const [demoUnlocked, setDemoUnlocked] = useState(false);
   const [selectedToken, setSelectedToken] = useState<RadarToken | null>(null);
-  const wallet = demoMode ? demoPersonality.walletAddress : address;
+  const wallet = demoMode ? REAL_DATA_DEMO_WALLET : address;
   const { personality, isLoading, error, runAnalysis } = useWalletAnalysis(wallet, demoMode);
   const { tokens, isLoading: radarLoading, error: radarError } = useRadar(personality, demoMode);
   const mintStatus = useMintStatus(address);
@@ -73,7 +75,7 @@ export function DegenFlow({
           </CardHeader>
           <CardContent className="space-y-5">
             <p className="text-sm leading-6 text-muted-foreground">
-              Connect an EVM wallet or use demo mode. DegenDNA reads public wallet
+              Connect an EVM wallet or use real-data demo mode. DegenDNA reads public wallet
               activity, computes a personality, ranks meme tokens, and unlocks
               full fit analysis through a Base NFT.
             </p>
@@ -83,14 +85,14 @@ export function DegenFlow({
             {!wallet ? (
               <div className="flex flex-col gap-3 sm:flex-row">
                 <ConnectWalletButton />
-                <Button variant="outline" onClick={() => setDemoMode(true)}>Try demo radar</Button>
+                <Button variant="outline" onClick={() => setDemoMode(true)}>Try real-data demo</Button>
               </div>
             ) : (
               <FlowActions
                 primaryLabel={personality ? "Refresh Analysis" : "Analyze Wallet"}
                 onPrimary={runAnalysis}
                 disabled={isLoading || (!isConnected && !demoMode)}
-                secondary={!demoMode ? <Button variant="outline" onClick={() => setDemoMode(true)}>Try Demo</Button> : null}
+                secondary={!demoMode ? <Button variant="outline" onClick={() => setDemoMode(true)}>Try Real-Data Demo</Button> : null}
               />
             )}
             {error ? <p className="text-sm text-warning">{error}</p> : null}
