@@ -1,11 +1,9 @@
-const steps = ["Connect", "Analyze", "Radar", "Mint", "Unlock"];
-const demoSteps = ["Demo", "Analyze", "Radar", "Unlocked", "Share"];
+const steps = ["Connect", "Analyze", "Access", "Radar", "Share"];
 
-export function FlowStepper({ activeIndex, demoMode = false }: { activeIndex: number; demoMode?: boolean }) {
-  const visibleSteps = demoMode ? demoSteps : steps;
+export function FlowStepper({ activeIndex }: { activeIndex: number }) {
   return (
     <div className="grid gap-2 sm:grid-cols-5">
-      {visibleSteps.map((step, index) => (
+      {steps.map((step, index) => (
         <div
           key={step}
           className={`rounded-lg border px-3 py-2 text-sm ${

@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
-import { ArrowDown, Lock, Sparkles } from "lucide-react";
+import { CheckCircle2, Sparkles } from "lucide-react";
 import { AnalysisProgress } from "@/components/analysis/AnalysisProgress";
 import { WeaknessReport } from "@/components/analysis/WeaknessReport";
 import { MintPanel } from "@/components/mint/MintPanel";
@@ -10,7 +10,7 @@ import { PersonalityCard } from "@/components/personality/PersonalityCard";
 import { RadarTable } from "@/components/radar/RadarTable";
 import { DownloadShareCardButton } from "@/components/share/DownloadShareCardButton";
 import { ShareToXButton } from "@/components/share/ShareToXButton";
-import { TokenDecisionCard } from "@/components/token/TokenDecisionCard";
+import { TokenPreviewDialog } from "@/components/token/TokenPreviewDialog";
 import { ConnectWalletButton } from "@/components/wallet/ConnectWalletButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,45 +24,74 @@ import { FlowActions } from "./FlowActions";
 import { FlowShell } from "./FlowShell";
 import { FlowStepper } from "./FlowStepper";
 
-const REAL_DATA_DEMO_WALLET =
-  process.env.NEXT_PUBLIC_DEMO_WALLET_ADDRESS || "0x2b585891B9bc6183f70e12Ae6413280E3304Ac07";
+function skipAccessKey(wallet: string) {
+  return `degendna:hackathon-access:${wallet.toLowerCase()}`;
+}
 
 export function DegenFlow({
-  initialDemo = false,
   initialTokenAddress,
   focus = "app",
 }: {
-  initialDemo?: boolean;
   initialTokenAddress?: string;
   focus?: "app" | "radar" | "mint" | "token";
 }) {
   const { address, isConnected } = useAccount();
-  const [demoMode, setDemoMode] = useState(initialDemo);
   const [selectedToken, setSelectedToken] = useState<RadarToken | null>(null);
-  const wallet = demoMode ? REAL_DATA_DEMO_WALLET : address;
-  const { personality, isLoading, error, runAnalysis } = useWalletAnalysis(wallet, demoMode);
-  const { tokens, isLoading: radarLoading, error: radarError } = useRadar(personality, demoMode);
+  const [skippedMint, setSkippedMint] = useState(false);
+  const [mintConfirmed, setMintConfirmed] = useState(false);
+  const wallet = address;
+  const { personality, isLoading, error, runAnalysis } = useWalletAnalysis(wallet);
+  const { tokens, isLoading: radarLoading, error: radarError } = useRadar(personality);
   const mintStatus = useMintStatus(address);
   const { refetch: refetchMintStatus } = mintStatus;
-  const unlocked = Boolean(demoMode || mintStatus.hasMinted);
+  const hasAccess = Boolean(skippedMint || mintConfirmed || mintStatus.hasMinted);
   const { items: watchlist, add, remove, clear } = useLocalWatchlist(wallet);
   const topFit = useMemo(() => [...tokens].sort((a, b) => (b.fitScore ?? 0) - (a.fitScore ?? 0))[0], [tokens]);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setSelectedToken(null);
+      setMintConfirmed(false);
+      setSkippedMint(wallet ? window.localStorage.getItem(skipAccessKey(wallet)) === "1" : false);
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [wallet]);
+
+  useEffect(() => {
+    if (!wallet || personality || isLoading) return;
+    const id = window.setTimeout(() => void runAnalysis(), 120);
+    return () => window.clearTimeout(id);
+  }, [wallet, personality, isLoading, runAnalysis]);
+
   const handleMinted = useCallback(() => {
+    setMintConfirmed(true);
     void refetchMintStatus();
   }, [refetchMintStatus]);
+
+  const handleSkipMint = useCallback(() => {
+    if (wallet && typeof window !== "undefined") {
+      window.localStorage.setItem(skipAccessKey(wallet), "1");
+    }
+    setSkippedMint(true);
+  }, [wallet]);
 
   const deepLinkedToken = useMemo(() => {
     if (!initialTokenAddress || !tokens.length) return null;
     return tokens.find((item) => item.address.toLowerCase() === initialTokenAddress.toLowerCase()) || tokens[0];
   }, [initialTokenAddress, tokens]);
-  const activeToken = selectedToken || deepLinkedToken;
 
-  const activeIndex = !wallet ? 0 : !personality ? 1 : !unlocked ? (focus === "mint" ? 3 : 2) : 4;
+  useEffect(() => {
+    if (focus !== "token" || !deepLinkedToken) return;
+    const id = window.setTimeout(() => setSelectedToken(deepLinkedToken), 0);
+    return () => window.clearTimeout(id);
+  }, [deepLinkedToken, focus]);
+
+  const activeIndex = !wallet ? 0 : !personality ? 1 : !hasAccess ? 2 : 4;
 
   return (
-    <FlowShell demoMode={demoMode}>
+    <FlowShell>
       <div className="mb-6">
-        <FlowStepper activeIndex={activeIndex} demoMode={demoMode} />
+        <FlowStepper activeIndex={activeIndex} />
       </div>
 
       <section className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
@@ -74,24 +103,19 @@ export function DegenFlow({
           </CardHeader>
           <CardContent className="space-y-5">
             <p className="text-sm leading-6 text-muted-foreground">
-              Connect an EVM wallet or use real-data demo mode. DegenDNA uses a light Birdeye
-              request budget, computes a wallet personality, and ranks meme tokens without
-              hammering the API.
+              Connect an EVM wallet, get a client-side DegenDNA summary, then mint
+              your identity or skip the transaction for full hackathon access.
             </p>
             <div className="rounded-lg border border-border bg-background/45 p-3 text-sm text-muted-foreground">
               This is behavioral and market analysis, not financial advice.
             </div>
             {!wallet ? (
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <ConnectWalletButton />
-                <Button variant="outline" onClick={() => setDemoMode(true)}>Try real-data demo</Button>
-              </div>
+              <ConnectWalletButton />
             ) : (
               <FlowActions
                 primaryLabel={personality ? "Refresh Analysis" : "Analyze Wallet"}
                 onPrimary={runAnalysis}
-                disabled={isLoading || (!isConnected && !demoMode)}
-                secondary={!demoMode ? <Button variant="outline" onClick={() => setDemoMode(true)}>Try Real-Data Demo</Button> : null}
+                disabled={isLoading || !isConnected}
               />
             )}
             {error ? <p className="text-sm text-warning">{error}</p> : null}
@@ -102,53 +126,42 @@ export function DegenFlow({
         <AnalysisProgress active={isLoading || radarLoading} complete={Boolean(personality && tokens.length)} />
       </section>
 
-      {personality ? (
+      {personality && !hasAccess ? (
+        <section id="access" className="mt-6 grid gap-6 lg:grid-cols-[1fr_520px] lg:items-start">
+          <PersonalityCard personality={personality} />
+          <MintPanel personality={personality} onMinted={handleMinted} onSkip={handleSkipMint} />
+        </section>
+      ) : null}
+
+      {personality && hasAccess ? (
         <section className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
           <PersonalityCard personality={personality} />
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5 text-warning" />
-                Pro unlock
+                <CheckCircle2 className="h-5 w-5 text-success" />
+                Access enabled
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm leading-6 text-muted-foreground">
-                {demoMode
-                  ? "Demo mode unlocks fit scores, warnings, watchlist, weakness report, and share card immediately. No mint or NFT transaction is required."
-                  : "Minting your DegenDNA NFT unlocks full radar rows, fit scores, warnings, local watchlist, weakness report, and share card."}
+                {mintStatus.hasMinted || mintConfirmed
+                  ? "Your NFT access is active. All radar, fit, warning, watchlist, and sharing tools are available."
+                  : "Hackathon access is active. All radar, fit, warning, watchlist, and sharing tools are available."}
               </p>
-              {unlocked ? (
-                <Badge tone="success">{demoMode ? "Demo unlocked" : "Unlocked"}</Badge>
-              ) : (
-                <a href="#mint" className="inline-flex items-center gap-2 text-sm font-semibold text-secondary">
-                  Go to mint <ArrowDown className="h-4 w-4" />
-                </a>
-              )}
+              <Badge tone="success">{mintStatus.hasMinted || mintConfirmed ? "NFT access" : "Skipped mint"}</Badge>
             </CardContent>
           </Card>
         </section>
       ) : null}
 
-      {personality ? (
+      {personality && hasAccess ? (
         <section id="radar" className="mt-6">
-          <RadarTable tokens={tokens} unlocked={unlocked} onSelect={setSelectedToken} onAdd={add} />
+          <RadarTable tokens={tokens} unlocked={hasAccess} onSelect={setSelectedToken} onAdd={add} />
         </section>
       ) : null}
 
-      {activeToken ? (
-        <section id="token" className="mt-6">
-          <TokenDecisionCard token={activeToken} personality={personality || undefined} unlocked={unlocked} onAdd={add} />
-        </section>
-      ) : null}
-
-      {personality && !demoMode ? (
-        <section id="mint" className="mt-6">
-          <MintPanel personality={personality} onMinted={handleMinted} />
-        </section>
-      ) : null}
-
-      {personality && unlocked ? (
+      {personality && hasAccess ? (
         <section className="mt-6 grid gap-6 lg:grid-cols-[1fr_380px]">
           <WeaknessReport personality={personality} />
           <Card>
@@ -182,6 +195,14 @@ export function DegenFlow({
           </Card>
         </section>
       ) : null}
+
+      <TokenPreviewDialog
+        token={selectedToken}
+        personality={personality || undefined}
+        unlocked={hasAccess}
+        onClose={() => setSelectedToken(null)}
+        onAdd={add}
+      />
     </FlowShell>
   );
 }
