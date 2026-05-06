@@ -35,9 +35,6 @@ export function Hero() {
                   Open My Radar <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/app?demo=1">Try Real-Data Demo</Link>
-              </Button>
             </div>
             <p className="mt-5 flex max-w-2xl items-start gap-2 text-sm leading-6 text-muted-foreground">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" />
@@ -59,7 +56,7 @@ export function Hero() {
                 "> reading public activity...",
                 "> mapping meme exposure...",
                 "> ranking Base meme tokens...",
-                "> fit scores locked until mint",
+                "> mint or skip to enter radar",
               ].map((line) => (
                 <p key={line} className="py-1 text-muted-foreground">
                   <span className="text-secondary">{line.slice(0, 1)}</span>

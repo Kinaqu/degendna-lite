@@ -18,9 +18,11 @@ import type { WalletPersonalityResult } from "@/lib/scoring/personalityTypes";
 export function MintPanel({
   personality,
   onMinted,
+  onSkip,
 }: {
   personality: WalletPersonalityResult;
   onMinted?: () => void;
+  onSkip?: () => void;
 }) {
   const { address } = useAccount();
   const { writeContract, data: hash, isPending, error } = useWriteContract();
@@ -58,11 +60,11 @@ export function MintPanel({
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <Badge tone="default">Base NFT unlock</Badge>
-            <CardTitle className="mt-3 text-2xl">Mint your DegenDNA NFT</CardTitle>
+            <Badge tone="default">Optional Base NFT</Badge>
+            <CardTitle className="mt-3 text-2xl">Save your DegenDNA onchain</CardTitle>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Mint your DegenDNA NFT on Base to unlock personalized radar filters,
-              fit scores, and strategy warnings.
+              Mint your wallet identity on Base, or skip the transaction and continue
+              with full hackathon access.
             </p>
           </div>
           <MintStatus hash={hash} confirmed={isSuccess} />
@@ -88,6 +90,11 @@ export function MintPanel({
           <Button onClick={mint} disabled={!address || !CONTRACT_ADDRESS || isPending || confirming} className="w-full">
             {isPending || confirming ? "Minting..." : "Mint on Base"}
           </Button>
+          {onSkip ? (
+            <Button variant="ghost" onClick={onSkip} className="w-full bg-background/20 text-muted-foreground opacity-75 hover:opacity-100">
+              Skip
+            </Button>
+          ) : null}
           {error ? <p className="text-sm text-danger">{error.message}</p> : null}
         </div>
       </CardContent>

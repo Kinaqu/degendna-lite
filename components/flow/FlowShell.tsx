@@ -4,10 +4,8 @@ import { WalletStatus } from "@/components/wallet/WalletStatus";
 
 export function FlowShell({
   children,
-  demoMode,
 }: {
   children: React.ReactNode;
-  demoMode?: boolean;
 }) {
   return (
     <main className="terminal-grid min-h-screen px-5 py-6 sm:px-8">
@@ -17,7 +15,7 @@ export function FlowShell({
             DegenDNA <span className="text-secondary">Lite</span>
           </Link>
           <div className="flex flex-wrap items-center gap-3">
-            <WalletStatus demoMode={demoMode} />
+            <WalletStatus />
             <ConnectWalletButton />
           </div>
         </header>

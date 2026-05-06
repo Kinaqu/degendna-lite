@@ -15,6 +15,6 @@ Default request budget:
 - Landing page: 0 Birdeye requests.
 - Wallet analysis: 1 Birdeye request to PnL summary.
 - Radar: 1 Birdeye request to trending tokens, with a second new-listings request only when the trending response is too small.
-- Demo mode: same real-data budget as the connected-wallet flow, with mint-gated features unlocked immediately for presentation.
+- Hackathon skip access: same real-data budget as the mint path, with the full client-side radar unlocked immediately for presentation.
 
 Endpoint paths are intentionally isolated in wrapper modules because Birdeye endpoint names may need adjustment.

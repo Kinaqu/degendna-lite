@@ -8,17 +8,28 @@ import type { WalletPersonalityResult } from "@/lib/scoring/personalityTypes";
 import { getCache, setCache, walletAnalysisKey } from "@/lib/storage/localCache";
 
 const TTL = 1000 * 60 * 20;
-const REAL_DATA_DEMO_WALLET =
-  process.env.NEXT_PUBLIC_DEMO_WALLET_ADDRESS || "0x2b585891B9bc6183f70e12Ae6413280E3304Ac07";
 
-export function useWalletAnalysis(wallet?: string, demoMode = false) {
+export function useWalletAnalysis(wallet?: string) {
   const chainId = useChainId();
   const [personality, setPersonality] = useState<WalletPersonalityResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setPersonality(null);
+      setError(null);
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [chainId, wallet]);
+
   const runAnalysis = useCallback(async () => {
-    const targetWallet = wallet || REAL_DATA_DEMO_WALLET;
+    if (!wallet) {
+      setError("Connect a wallet before running DegenDNA analysis.");
+      return;
+    }
+
+    const targetWallet = wallet;
     setIsLoading(true);
     setError(null);
     try {
@@ -46,12 +57,6 @@ export function useWalletAnalysis(wallet?: string, demoMode = false) {
       setIsLoading(false);
     }
   }, [chainId, wallet]);
-
-  useEffect(() => {
-    if (!demoMode) return;
-    const id = window.setTimeout(() => void runAnalysis(), 0);
-    return () => window.clearTimeout(id);
-  }, [demoMode, runAnalysis]);
 
   return { personality, isLoading, error, runAnalysis, setPersonality };
 }

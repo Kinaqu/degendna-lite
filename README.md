@@ -62,9 +62,12 @@ forge script contracts/script/Deploy.s.sol --rpc-url $BASE_RPC_URL --broadcast -
 
 Set `NEXT_PUBLIC_DEGENDNA_CONTRACT_ADDRESS` to the deployed contract address.
 
-## Demo Mode
+## Hackathon Access
 
-Use `/app?demo=1` or the “Try Real-Data Demo” button. Demo mode uses a configured public wallet address and still calls Birdeye directly from the browser. It unlocks fit scores, warnings, watchlist, weakness report, and share card immediately, without minting. Radar tokens are not fixture-backed; they come from Birdeye token endpoints or show an explicit unavailable state.
+After wallet analysis, users can mint their DegenDNA NFT or press Skip. For the
+hackathon build, both paths unlock the full client-side radar experience. Radar
+tokens are not fixture-backed; they come from Birdeye token endpoints or show an
+explicit unavailable state.
 
 To protect the public API key, the app uses a light request budget: wallet analysis defaults to Birdeye PnL summary, radar defaults to trending tokens, and new listings are only requested if the trending response is too small.
 

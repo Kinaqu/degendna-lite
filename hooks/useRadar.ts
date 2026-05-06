@@ -12,7 +12,7 @@ const TTL = 1000 * 60 * 5;
 
 export type RadarMode = "new" | "trending" | "meme" | "low-risk" | "momentum" | "best-fit";
 
-export function useRadar(personality?: WalletPersonalityResult | null, demoMode = false) {
+export function useRadar(personality?: WalletPersonalityResult | null) {
   const chainId = useChainId();
   const [tokens, setTokens] = useState<RadarToken[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +22,7 @@ export function useRadar(personality?: WalletPersonalityResult | null, demoMode 
     setIsLoading(true);
     setError(null);
     try {
-      const key = radarKey(chainId, `${demoMode ? "real-demo" : "real"}:${personality?.walletAddress || "base"}`);
+      const key = radarKey(chainId, `real:${personality?.walletAddress || "base"}`);
       const cached = getCache<RadarToken[]>(key, TTL);
       if (cached) {
         setTokens(cached);
@@ -39,13 +39,13 @@ export function useRadar(personality?: WalletPersonalityResult | null, demoMode 
     } finally {
       setIsLoading(false);
     }
-  }, [chainId, demoMode, personality]);
+  }, [chainId, personality]);
 
   useEffect(() => {
-    if (!personality && !demoMode) return;
+    if (!personality) return;
     const id = window.setTimeout(() => void loadRadar(), 0);
     return () => window.clearTimeout(id);
-  }, [personality, demoMode, loadRadar]);
+  }, [personality, loadRadar]);
 
   return { tokens, isLoading, error, loadRadar };
 }
