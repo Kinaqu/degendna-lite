@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ExternalLink, Plus } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,12 +15,10 @@ export function TokenDecisionCard({
   token,
   personality,
   unlocked,
-  onAdd,
 }: {
   token: RadarToken;
   personality?: WalletPersonalityResult;
   unlocked: boolean;
-  onAdd?: (token: RadarToken) => void;
 }) {
   return (
     <Card>
@@ -32,15 +30,11 @@ export function TokenDecisionCard({
             <p className="mt-1 text-sm text-muted-foreground">{token.name} · Base · {shortAddress(token.address)}</p>
           </div>
           <div className="flex gap-2">
-            {unlocked && onAdd ? (
-              <Button variant="outline" onClick={() => onAdd(token)}>
-                <Plus className="h-4 w-4" /> Watchlist
-              </Button>
-            ) : (
+            {!unlocked ? (
               <Button asChild variant="outline">
                 <Link href="/mint">Mint to unlock</Link>
               </Button>
-            )}
+            ) : null}
             <Button asChild variant="ghost" size="icon">
               <a href={`https://birdeye.so/token/${token.address}?chain=base`} target="_blank" rel="noreferrer" aria-label="Open Birdeye">
                 <ExternalLink className="h-4 w-4" />

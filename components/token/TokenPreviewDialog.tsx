@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ExternalLink, Plus, X } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { RadarToken, WalletPersonalityResult } from "@/lib/scoring/personalityTypes";
@@ -16,13 +15,11 @@ export function TokenPreviewDialog({
   personality,
   unlocked,
   onClose,
-  onAdd,
 }: {
   token: RadarToken | null;
   personality?: WalletPersonalityResult;
   unlocked: boolean;
   onClose: () => void;
-  onAdd?: (token: RadarToken) => void;
 }) {
   return (
     <Dialog.Root open={Boolean(token)} onOpenChange={(open) => (!open ? onClose() : undefined)}>
@@ -66,20 +63,12 @@ export function TokenPreviewDialog({
               <RiskWarnings token={token} />
               <FitExplanation token={token} personality={personality} unlocked={unlocked} />
 
-              <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row">
-                <Button asChild variant="outline" className="sm:flex-1">
-                  <Link href={`/token/${token.address}`}>Open token page</Link>
-                </Button>
-                <Button asChild variant="outline" className="sm:flex-1">
+              <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+                <Button asChild variant="outline" className="sm:min-w-48">
                   <a href={`https://birdeye.so/token/${token.address}?chain=base`} target="_blank" rel="noreferrer">
                     Open Birdeye <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
-                {unlocked && onAdd ? (
-                  <Button onClick={() => onAdd(token)} className="sm:flex-1">
-                    <Plus className="h-4 w-4" /> Watchlist
-                  </Button>
-                ) : null}
               </div>
             </div>
           ) : null}
