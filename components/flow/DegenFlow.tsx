@@ -107,12 +107,20 @@ export function DegenFlow({
         </Card>
       ) : (
         <div className="space-y-6">
-          <div className="flex flex-col gap-3 rounded-xl border border-border bg-background/45 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-xl border border-border bg-background/45 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <Badge tone={isPreviewMode ? "warning" : "success"}>
                 {isPreviewMode ? "Address preview mode" : "Connected wallet mode"}
               </Badge>
-              <p className="mt-2 font-mono text-sm text-muted-foreground">
+              <p className="mt-3 font-display text-2xl font-semibold">
+                Wallet analysis and token radar
+              </p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                DegenDNA reads public wallet activity, builds a simple personality
+                profile, then ranks live Base tokens by momentum, risk, liquidity,
+                and fit for this wallet.
+              </p>
+              <p className="mt-2 font-mono text-xs text-muted-foreground">
                 {wallet ? shortAddress(wallet) : null}
               </p>
             </div>

@@ -6,6 +6,7 @@ import { formatEther, parseEther } from "viem";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { NetworkGuard } from "@/components/wallet/NetworkGuard";
 import { degenDnaAbi } from "@/lib/blockchain/abi";
 import { CONTRACT_ADDRESS, baseChain } from "@/lib/blockchain/config";
@@ -62,10 +63,16 @@ export function MintDegenDnaDialog({
     <Dialog.Root open={open}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/72 backdrop-blur-sm" />
-        <Dialog.Content className="fixed inset-x-4 bottom-4 z-50 max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-5 shadow-[0_24px_90px_rgba(0,0,0,0.45)] focus:outline-none sm:left-1/2 sm:right-auto sm:top-1/2 sm:bottom-auto sm:w-[min(860px,calc(100vw-32px))] sm:-translate-x-1/2 sm:-translate-y-1/2">
+        <Dialog.Content className="fixed inset-x-3 bottom-3 z-50 max-h-[92vh] overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-[0_24px_90px_rgba(0,0,0,0.45)] focus:outline-none sm:left-1/2 sm:right-auto sm:top-1/2 sm:bottom-auto sm:w-[min(980px,calc(100vw-32px))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:p-5">
           {personality ? (
-            <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
-              <NFTPreview personality={personality} />
+            <div className="grid gap-5 lg:grid-cols-[420px_1fr] lg:items-start">
+              <div className="relative rounded-xl border border-secondary/30 bg-background/60 p-3 shadow-[0_0_40px_rgba(34,211,238,0.08)]">
+                <BorderBeam />
+                <NFTPreview personality={personality} />
+                <p className="mt-3 text-center font-mono text-xs uppercase text-muted-foreground">
+                  DegenDNA identity preview
+                </p>
+              </div>
               <div className="space-y-4">
                 <div>
                   <Badge tone="default">Connected wallet mode</Badge>

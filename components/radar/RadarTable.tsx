@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { RadarMode } from "@/hooks/useRadar";
 import type { RadarToken } from "@/lib/scoring/personalityTypes";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { RadarFilters } from "./RadarFilters";
 import { RadarEmptyState } from "./RadarEmptyState";
 import { TokenRow } from "./TokenRow";
@@ -33,9 +34,14 @@ export function RadarTable({
   return (
     <Card className="overflow-hidden">
       <div className="flex flex-col gap-4 border-b border-border p-5 lg:flex-row lg:items-center lg:justify-between">
-        <div>
+        <div className="max-w-3xl">
+          <Badge tone="cyan">Live Birdeye radar</Badge>
           <h2 className="font-display text-2xl font-bold">Meme Radar</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Ranked by Birdeye data and your DegenDNA.</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            These tokens are ranked from live Birdeye market data and your wallet
+            personality. Use the filters to sort by new listings, momentum, lower
+            risk, or personal fit.
+          </p>
         </div>
         <RadarFilters mode={mode} onModeChange={setMode} locked={!unlocked} />
       </div>
@@ -43,7 +49,7 @@ export function RadarTable({
         <table className="w-full min-w-[960px] text-left">
           <thead className="border-b border-border bg-background/45 text-xs uppercase text-muted-foreground">
             <tr>
-              {["Token", "Age", "Price %", "Volume %", "Momentum", "Risk", "Liquidity", "Fit For You", "Verdict", ""].map((heading) => (
+              {["Token", "Age", "Price %", "Volume %", "Momentum", "Risk", "Liquidity", "Fit For You", "Verdict", "Inspect"].map((heading) => (
                 <th key={heading} className="px-4 py-3 font-semibold">{heading}</th>
               ))}
             </tr>

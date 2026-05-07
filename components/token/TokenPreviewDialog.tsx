@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -64,11 +63,8 @@ export function TokenPreviewDialog({
               <RiskWarnings token={token} />
               <FitExplanation token={token} personality={personality} unlocked={unlocked} />
 
-              <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row">
-                <Button asChild variant="outline" className="sm:flex-1">
-                  <Link href={`/token/${token.address}`}>Open token page</Link>
-                </Button>
-                <Button asChild variant="outline" className="sm:flex-1">
+              <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+                <Button asChild variant="outline" className="sm:min-w-48">
                   <a href={`https://birdeye.so/token/${token.address}?chain=base`} target="_blank" rel="noreferrer">
                     Open Birdeye <ExternalLink className="h-4 w-4" />
                   </a>
