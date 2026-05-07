@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BorderBeam } from "@/components/ui/border-beam";
+import { LandingEntryActions } from "./LandingEntryActions";
 
 export function Hero() {
   return (
@@ -29,13 +30,7 @@ export function Hero() {
               DegenDNA analyzes your wallet behavior and ranks new meme tokens by
               momentum, risk, liquidity, and personal fit.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg">
-                <Link href="/app">
-                  Open My Radar <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+            <LandingEntryActions />
             <p className="mt-5 flex max-w-2xl items-start gap-2 text-sm leading-6 text-muted-foreground">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" />
               We only read public wallet activity. No approvals. No private keys.

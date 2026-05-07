@@ -21,12 +21,10 @@ export function RadarTable({
   tokens,
   unlocked,
   onSelect,
-  onAdd,
 }: {
   tokens: RadarToken[];
   unlocked: boolean;
   onSelect: (token: RadarToken) => void;
-  onAdd?: (token: RadarToken) => void;
 }) {
   const [mode, setMode] = useState<RadarMode>("trending");
   const visibleTokens = useMemo(() => filterTokens(tokens, mode, unlocked).slice(0, unlocked ? 12 : 5), [mode, tokens, unlocked]);
@@ -52,7 +50,7 @@ export function RadarTable({
           </thead>
           <tbody>
             {visibleTokens.map((token) => (
-              <TokenRow key={token.address} token={token} unlocked={unlocked} onSelect={onSelect} onAdd={onAdd} />
+              <TokenRow key={token.address} token={token} unlocked={unlocked} onSelect={onSelect} />
             ))}
           </tbody>
         </table>

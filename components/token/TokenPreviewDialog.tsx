@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ExternalLink, Plus, X } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { RadarToken, WalletPersonalityResult } from "@/lib/scoring/personalityTypes";
@@ -16,13 +16,11 @@ export function TokenPreviewDialog({
   personality,
   unlocked,
   onClose,
-  onAdd,
 }: {
   token: RadarToken | null;
   personality?: WalletPersonalityResult;
   unlocked: boolean;
   onClose: () => void;
-  onAdd?: (token: RadarToken) => void;
 }) {
   return (
     <Dialog.Root open={Boolean(token)} onOpenChange={(open) => (!open ? onClose() : undefined)}>
@@ -75,11 +73,6 @@ export function TokenPreviewDialog({
                     Open Birdeye <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
-                {unlocked && onAdd ? (
-                  <Button onClick={() => onAdd(token)} className="sm:flex-1">
-                    <Plus className="h-4 w-4" /> Watchlist
-                  </Button>
-                ) : null}
               </div>
             </div>
           ) : null}

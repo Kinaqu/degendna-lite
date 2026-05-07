@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LockedFitScore } from "./LockedFitScore";
@@ -12,12 +12,10 @@ export function TokenRow({
   token,
   unlocked,
   onSelect,
-  onAdd,
 }: {
   token: RadarToken;
   unlocked: boolean;
   onSelect: (token: RadarToken) => void;
-  onAdd?: (token: RadarToken) => void;
 }) {
   return (
     <tr className="border-b border-border/70 align-middle last:border-b-0 hover:bg-muted/30">
@@ -40,11 +38,6 @@ export function TokenRow({
           <Button variant="ghost" size="icon" onClick={() => onSelect(token)} aria-label={`Inspect ${token.symbol}`}>
             <Search className="h-4 w-4" />
           </Button>
-          {unlocked && onAdd ? (
-            <Button variant="ghost" size="icon" onClick={() => onAdd(token)} aria-label={`Add ${token.symbol}`}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          ) : null}
         </div>
         <p className="mt-1 text-xs text-muted-foreground">{formatCompact(token.liquidity)}</p>
       </td>
